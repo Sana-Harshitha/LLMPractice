@@ -1,4 +1,27 @@
-# LLMPractice
+# LLM From Scratch — My Learning Journey
+
+Welcome to my **LLM Practice** repository! 🚀
+
+In this repo, I’m exploring how **Large Language Models (LLMs)** work by building components from scratch and experimenting with core concepts like tokenization, embeddings, attention, transformers, and more.
+
+Rather than just using pre-built tools, my goal is to **understand the internals step by step** — how each part functions and how everything fits together.
+
+### 🧠 What You’ll Find Here
+
+This `README.md` will serve as a living document — a kind of **learning journal** — where I’ll write down the key concepts I explore, what I understood, and small explanations in my own words.
+
+Whenever I dive into a new concept, such as embedding layers, positional encodings, self-attention, or model training, I’ll update this file with:
+
+- A beginner-friendly explanation
+- Code snippets I’ve written or modified
+- My personal observations and insights
+
+---
+
+> 🔍 The goal of this project is not just to build something that works, but to **learn deeply** by experimenting, breaking things, fixing them, and documenting the journey.
+
+So far, here’s what I’ve learned:
+
 
 ##
 Understanding Embedding Layers — What I Learned
