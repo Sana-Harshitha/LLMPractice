@@ -2,7 +2,7 @@
 
 Welcome to my **LLM Practice** repository! 
 
-In this repo, I’m exploring how **Large Language Models (LLMs)** work by building components from scratch and experimenting with core concepts like tokenization, embeddings, attention, transformers, and more.
+In this repo, I’m exploring how **Large Language Models (LLMs)** work by building components from scratch and experimenting with core concepts like tokenization, embeddings, attention, transformers, and more. 
 
 Rather than just using pre-built tools, my goal is to **understand the internals step by step** — how each part functions and how everything fits together.
 
