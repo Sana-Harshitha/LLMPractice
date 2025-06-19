@@ -1,38 +1,58 @@
+import torch
+import tiktoken
+
+tokenizer = tiktoken.get_encoding("gpt2")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+def text_to_token_ids(text, tokenizer):
+    if isinstance(text, torch.Tensor):
+        raise TypeError("Expected `text` to be a string, but got a tensor.")
+    encoded = tokenizer.encode(text, allowed_special={'<|endoftext|>'})
+    return torch.tensor(encoded).unsqueeze(0)  # shape: [1, T]
+
+
+def token_ids_to_text(token_ids, tokenizer):
+    flat = token_ids.squeeze(0) # remove batch dimension
+    return tokenizer.decode(flat.tolist())
+
 
 def generate(model, idx, max_new_tokens, context_size, temperature=0.0, top_k=None, eos_id=None):
+    assert isinstance(top_k, (int, type(None))), "`top_k` must be an int or None"
 
-    # For-loop is the same as before: Get logits, and only focus on last time step
+    idx = idx.to(device)
+
     for _ in range(max_new_tokens):
         idx_cond = idx[:, -context_size:]
+
         with torch.no_grad():
             logits = model(idx_cond)
-        logits = logits[:, -1, :]
 
-        # New: Filter logits with top_k sampling
+        if logits.size(1) == 0:
+            raise ValueError("Model returned empty logits. Likely due to empty input.")
+
+        logits = logits[:, -1, :]  # Get logits of last token → shape [1, vocab]
+
+        vocab_size = logits.shape[-1]
+
         if top_k is not None:
-            # Keep only top_k values
+            top_k = int(top_k)
+            if not (0 < top_k <= vocab_size):
+                raise ValueError(f"Top-k must be > 0 and <= vocab size. Got top_k={top_k}, vocab_size={vocab_size}")
+            
             top_logits, _ = torch.topk(logits, top_k)
             min_val = top_logits[:, -1]
-            logits = torch.where(logits < min_val, torch.tensor(float("-inf")).to(logits.device), logits)
+            logits = torch.where(logits < min_val, torch.tensor(float("-inf"), device=logits.device), logits)
 
-        # New: Apply temperature scaling
         if temperature > 0.0:
             logits = logits / temperature
-
-            # Apply softmax to get probabilities
-            probs = torch.softmax(logits, dim=-1)  # (batch_size, context_len)
-
-            # Sample from the distribution
-            idx_next = torch.multinomial(probs, num_samples=1)  # (batch_size, 1)
-
-        # Otherwise same as before: get idx of the vocab entry with the highest logits value
+            probs = torch.softmax(logits, dim=-1)
+            idx_next = torch.multinomial(probs, num_samples=1)
         else:
-            idx_next = torch.argmax(logits, dim=-1, keepdim=True)  # (batch_size, 1)
+            idx_next = torch.argmax(logits, dim=-1, keepdim=True)
 
-        if idx_next == eos_id:  # Stop generating early if end-of-sequence token is encountered and eos_id is specified
+        if eos_id is not None and (idx_next == eos_id).all():
             break
 
-        # Same as before: append sampled index to the running sequence
-        idx = torch.cat((idx, idx_next), dim=1)  # (batch_size, num_tokens+1)
+        idx = torch.cat((idx, idx_next), dim=1)
 
     return idx
