@@ -6,3 +6,4 @@ __pycache__/
 *.ckpt
 *.pt
 *.pth
+Training_Llm/
